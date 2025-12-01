@@ -1,21 +1,27 @@
 // import { Header } from "./components/header";
 // import {Aluno} from "./components/aluno";
 // import { Footer } from "./components/footer";
-import {useEffect, useState} from 'react'
+import {useState, useEffect} from 'react'
 
 
 export default function App(){
 const [input, setInput] = useState("");
-const [tasks, setTasks] = useState([
-  'Estudar react com typescript',
-  'Almoçar',
-  'Estudar prova'
-])
+const [tasks, setTasks] = useState<string[]>([])
 
 const[ editTask, setEditTask] = useState({
   enabled:false,
   task:''
 })
+
+const [teste, setTest] = useState(false);
+
+useEffect(() => {
+const tarefaSalvas = localStorage.getItem("@pedroreact")
+
+if(tarefaSalvas){
+  setTasks(JSON.parse(tarefaSalvas));
+}
+}, [])
 
 
   
@@ -30,6 +36,7 @@ function handleRegister(){
   }
   setTasks(tarefas=> [...tarefas, input])
   setInput("")
+  localStorage.setItem("@pedroreact", JSON.stringify([...tasks, input]) )
 }
 
 function handleSaveEdit(){
@@ -44,11 +51,15 @@ setEditTask({
   task:''
 })
 setInput("")
+localStorage.setItem("@pedroreact", JSON.stringify(allTasks) )
+
 }
 
  function handleDelete(item: string){
   const removeTask = tasks.filter(task => task !== item)
 setTasks(removeTask)
+localStorage.setItem("@pedroreact", JSON.stringify(removeTask) )
+
 }
 
 function handleEdit(item:string){
@@ -59,8 +70,10 @@ setEditTask({
 })
 }
 
+//----------------------------------------- -----------------------------------
   return(
     <div> 
+      <button onClick={ () => setTest(true)}>Clicar</button>
 <h1>Lista de tarefas</h1>
 <input 
 placeholder='Digite o nome da tarefa'
