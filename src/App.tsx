@@ -1,10 +1,13 @@
 // import { Header } from "./components/header";
 // import {Aluno} from "./components/aluno";
 // import { Footer } from "./components/footer";
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef, useMemo, useCallback} from 'react'
 
 
 export default function App(){
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const firstRender =useRef(true)
 const [input, setInput] = useState("");
 const [tasks, setTasks] = useState<string[]>([])
 
@@ -23,21 +26,32 @@ if(tarefaSalvas){
 }
 }, [])
 
-
-  
-function handleRegister(){
-  if(!input){
-    alert("Preencha o nome da sua tarefa")
-    return
-  }
-  if(editTask.enabled){
-    handleSaveEdit();
+useEffect(() => {
+  if(firstRender.current)
+  {
+    firstRender.current= false;
     return;
   }
-  setTasks(tarefas=> [...tarefas, input])
-  setInput("")
-  localStorage.setItem("@pedroreact", JSON.stringify([...tasks, input]) )
+  localStorage.setItem("@pedroreact", JSON.stringify(tasks) )
+
+}, [tasks]);
+
+
+const handleRegister = useCallback(() => {
+if(!input){
+  alert("Preencha o nome da sua tarefa!")
+  return;
 }
+if(editTask.enabled){
+  handleSaveEdit();
+  return;
+}
+
+setTasks(tarefas => [...tarefas, input])
+setInput("")
+},[input,tasks])
+
+
 
 function handleSaveEdit(){
   const findIndexTask = tasks.findIndex(task => task ===editTask.task)
@@ -63,6 +77,8 @@ localStorage.setItem("@pedroreact", JSON.stringify(removeTask) )
 }
 
 function handleEdit(item:string){
+
+  inputRef.current?.focus();
 setInput(item)
 setEditTask({
   enabled: true,
@@ -70,6 +86,9 @@ setEditTask({
 })
 }
 
+const totalTarefas = useMemo(()=> {
+return tasks.length
+},[tasks])
 //----------------------------------------- -----------------------------------
   return(
     <div> 
@@ -79,13 +98,15 @@ setEditTask({
 placeholder='Digite o nome da tarefa'
 value={input}
 onChange={(e) => setInput(e.target.value)}
+ref={inputRef}
 />
 <button onClick={handleRegister}>
   {editTask.enabled ? "Atualizar tarefa" : "Adicionar tarefa"}
 </button>
 
 <hr/>
-
+<strong>Você tem {totalTarefas} tarefas!</strong>
+<br/><br/>
 {tasks.map((item, index) => (
   <section key={item}>
     <span>{item }</span>
